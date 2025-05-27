@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { Link } from 'react-router-dom';
 import { IoIosSearch } from "react-icons/io";
 
 import "./nav.css"
@@ -8,10 +8,15 @@ function Nav() {
   return (
     <nav className='nav-bar'>
       <ul className='nav-list'>
-        <li><a className='nav-link-first' href="/">Home</a></li>
-        <li><a className='nav-link' href="/about">user</a></li>
+        <li><Link className='nav-link-first' to="/">Home</Link></li>
+        <li><Link className='nav-link' to="/login">Login</Link></li>
       </ul>
-      <div className='nav-search'><input className='nav-search-input'/><IoIosSearch className='nav-search-icon' /></div>
+      <div className='nav-search'>
+        <input className='nav-search-input' placeholder="Buscar shopping..."/>
+        <Link to="/busca">
+          <IoIosSearch className='nav-search-icon' />
+        </Link>
+      </div>
     </nav>
   );
 }

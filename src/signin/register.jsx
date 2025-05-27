@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import './signin.css';
 
-const SignIn = () => {
+const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    document: '',
+    id: '',
+    email: '',
+    name: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
@@ -26,13 +28,11 @@ const SignIn = () => {
     setError('');
 
     try {
-      const response = await api.login(formData.document, formData.password);
-      localStorage.setItem('userId', response.id);
-      localStorage.setItem('userName', response.name);
-      navigate('/');
+      await api.registerUser(formData);
+      navigate('/login');
     } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      setError('Documento ou senha inválidos');
+      console.error('Erro ao cadastrar usuário:', error);
+      setError('Não foi possível realizar o cadastro. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -41,19 +41,45 @@ const SignIn = () => {
   return (
     <div className="signin-container">
       <div className="signin-card">
-        <h1>Login</h1>
+        <h1>Cadastro</h1>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit} className="signin-form">
           <div className="form-group">
-            <label htmlFor="document">Documento:</label>
+            <label htmlFor="id">Documento:</label>
             <input
               type="text"
-              id="document"
-              name="document"
-              value={formData.document}
+              id="id"
+              name="id"
+              value={formData.id}
               onChange={handleChange}
               required
               placeholder="Digite seu documento"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="name">Nome:</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Digite seu nome"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Digite seu email"
             />
           </div>
 
@@ -75,12 +101,23 @@ const SignIn = () => {
             className="submit-button"
             disabled={loading}
           >
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Cadastrando...' : 'Cadastrar'}
           </button>
+
+          <p className="login-link">
+            Já tem uma conta?{' '}
+            <button 
+              type="button" 
+              onClick={() => navigate('/login')}
+              className="link-button"
+            >
+              Faça login
+            </button>
+          </p>
         </form>
       </div>
     </div>
   );
 };
 
-export default SignIn;
+export default Register; 
