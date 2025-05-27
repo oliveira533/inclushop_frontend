@@ -20,18 +20,24 @@ const ShoppingDetails = () => {
     const fetchShoppingDetails = async () => {
       try {
         setLoading(true);
-        // Dados mockados temporários até a API ser implementada
-        const mockShoppingDetails = {
+        const response = await fetch(`https://incluapi.vercel.app/api/shopping/info/${id}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error('Erro ao buscar informações do shopping');
+        }
+
+        setShoppingDetails({
           id: id,
-          name: "Shopping Example",
-          address: "Rua Example, 123",
-          cep: "12345-678",
+          name: data.name,
+          address: `${data.street}, ${data.number}`,
+          cep: data.cep,
+          state: data.state,
           description: "Um shopping moderno com diversas lojas e opções de lazer",
           openingHours: "Segunda a Sábado: 10h às 22h | Domingo: 14h às 20h",
           parking: "Estacionamento disponível",
           accessibility: "Acessibilidade completa"
-        };
-        setShoppingDetails(mockShoppingDetails);
+        });
 
         // Buscar avaliações do shopping usando a API real
         console.log('Buscando avaliações para o shopping:', id);
@@ -44,10 +50,10 @@ const ShoppingDetails = () => {
         
         setReviews(Array.isArray(reviewsData) ? reviewsData : []);
       } catch (error) {
-        console.error("Erro detalhado ao carregar avaliações:", error);
+        console.error("Erro detalhado ao carregar dados:", error);
         console.error("Mensagem de erro:", error.message);
         console.error("Stack trace:", error.stack);
-        setError('Não foi possível carregar as avaliações. Por favor, tente novamente mais tarde.');
+        setError('Não foi possível carregar as informações. Por favor, tente novamente mais tarde.');
       } finally {
         setLoading(false);
       }
