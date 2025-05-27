@@ -9,22 +9,32 @@ const ShoppingDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newReview, setNewReview] = useState({
+    rating: 5,
+    response: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchShoppingDetails = async () => {
       try {
         setLoading(true);
-        // TODO: Implementar busca dos detalhes do shopping quando o endpoint estiver disponível
+        // Dados mockados temporários até a API ser implementada
         const mockShoppingDetails = {
           id: id,
           name: "Shopping Example",
           address: "Rua Example, 123",
-          cep: "12345-678"
+          cep: "12345-678",
+          description: "Um shopping moderno com diversas lojas e opções de lazer",
+          openingHours: "Segunda a Sábado: 10h às 22h | Domingo: 14h às 20h",
+          parking: "Estacionamento disponível",
+          accessibility: "Acessibilidade completa"
         };
         setShoppingDetails(mockShoppingDetails);
 
-        // Buscar avaliações do shopping
-        const reviewsData = await api.getShoppingReviews(mockShoppingDetails.cep);
+        // Buscar avaliações do shopping usando a API real
+        const reviewsData = await api.get(`/shopping/rate/${id}`);
         setReviews(reviewsData);
       } catch (error) {
         console.error("Erro ao carregar detalhes do shopping:", error);
@@ -36,6 +46,36 @@ const ShoppingDetails = () => {
 
     fetchShoppingDetails();
   }, [id]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      const reviewData = {
+        shopping: id,
+        rating: newReview.rating,
+        response: [{
+          question: "Avaliação",
+          response: newReview.response
+        }]
+      };
+
+      await api.post('/new/rate', reviewData);
+      
+      // Atualizar a lista de avaliações
+      const updatedReviews = await api.get(`/shopping/rate/${id}`);
+      setReviews(updatedReviews);
+      
+      // Limpar o formulário e fechar
+      setNewReview({ rating: 5, response: '' });
+      setShowReviewForm(false);
+    } catch (error) {
+      console.error("Erro ao enviar avaliação:", error);
+      setError('Não foi possível enviar sua avaliação. Tente novamente mais tarde.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const renderStars = (rating) => {
     const fullStars = Math.min(Math.floor(rating), 5);
@@ -68,10 +108,60 @@ const ShoppingDetails = () => {
       <div className="shopping-header">
         <h1>{shoppingDetails.name}</h1>
         <p className="shopping-address">{shoppingDetails.address}</p>
+        <p className="shopping-description">{shoppingDetails.description}</p>
+        <div className="shopping-info">
+          <p><strong>Horário de Funcionamento:</strong> {shoppingDetails.openingHours}</p>
+          <p><strong>Estacionamento:</strong> {shoppingDetails.parking}</p>
+          <p><strong>Acessibilidade:</strong> {shoppingDetails.accessibility}</p>
+        </div>
       </div>
 
       <div className="reviews-section">
-        <h2>Avaliações</h2>
+        <div className="reviews-header">
+          <h2>Avaliações</h2>
+          <button 
+            className="add-review-button"
+            onClick={() => setShowReviewForm(!showReviewForm)}
+          >
+            {showReviewForm ? 'Cancelar' : 'Adicionar Avaliação'}
+          </button>
+        </div>
+
+        {showReviewForm && (
+          <form onSubmit={handleSubmitReview} className="review-form">
+            <div className="rating-input">
+              <label>Avaliação:</label>
+              <div className="star-rating">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
+                    style={{ cursor: 'pointer', color: star <= newReview.rating ? '#ffd700' : '#ccc' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="response-input">
+              <label>Comentário:</label>
+              <textarea
+                value={newReview.response}
+                onChange={(e) => setNewReview({ ...newReview, response: e.target.value })}
+                required
+                placeholder="Digite seu comentário sobre o shopping..."
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="submit-review-button"
+              disabled={submitting}
+            >
+              {submitting ? 'Enviando...' : 'Enviar Avaliação'}
+            </button>
+          </form>
+        )}
+
         {reviews.length === 0 ? (
           <p className="no-reviews">Ainda não há avaliações para este shopping.</p>
         ) : (
@@ -79,7 +169,6 @@ const ShoppingDetails = () => {
             {reviews.map((review) => (
               <div key={review.id} className="review-card">
                 <div className="review-header">
-                  <h3>{review.user}</h3>
                   <div className="review-rating">
                     {renderStars(review.rating)}
                     <span className="rating-number">({review.rating})</span>
