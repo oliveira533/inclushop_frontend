@@ -34,11 +34,20 @@ const ShoppingDetails = () => {
         setShoppingDetails(mockShoppingDetails);
 
         // Buscar avaliações do shopping usando a API real
-        const reviewsData = await api.get(`/shopping/rate/${id}`);
-        setReviews(reviewsData);
+        console.log('Buscando avaliações para o shopping:', id);
+        const reviewsData = await api.getShoppingReviews(id);
+        console.log('Resposta da API de avaliações:', reviewsData);
+        
+        if (!reviewsData) {
+          throw new Error('Nenhuma avaliação encontrada');
+        }
+        
+        setReviews(Array.isArray(reviewsData) ? reviewsData : []);
       } catch (error) {
-        console.error("Erro ao carregar detalhes do shopping:", error);
-        setError('Não foi possível carregar os detalhes do shopping. Tente novamente mais tarde.');
+        console.error("Erro detalhado ao carregar avaliações:", error);
+        console.error("Mensagem de erro:", error.message);
+        console.error("Stack trace:", error.stack);
+        setError('Não foi possível carregar as avaliações. Por favor, tente novamente mais tarde.');
       } finally {
         setLoading(false);
       }
@@ -54,24 +63,27 @@ const ShoppingDetails = () => {
       const reviewData = {
         shopping: id,
         rating: newReview.rating,
-        response: [{
-          question: "Avaliação",
-          response: newReview.response
-        }]
+        comment: newReview.response
       };
 
-      await api.post('/new/rate', reviewData);
+      console.log('Enviando avaliação:', reviewData);
+      await api.createReview(reviewData);
       
       // Atualizar a lista de avaliações
-      const updatedReviews = await api.get(`/shopping/rate/${id}`);
-      setReviews(updatedReviews);
+      console.log('Buscando avaliações atualizadas...');
+      const updatedReviews = await api.getShoppingReviews(id);
+      console.log('Avaliações atualizadas:', updatedReviews);
+      
+      setReviews(Array.isArray(updatedReviews) ? updatedReviews : []);
       
       // Limpar o formulário e fechar
       setNewReview({ rating: 5, response: '' });
       setShowReviewForm(false);
     } catch (error) {
-      console.error("Erro ao enviar avaliação:", error);
-      setError('Não foi possível enviar sua avaliação. Tente novamente mais tarde.');
+      console.error("Erro detalhado ao enviar avaliação:", error);
+      console.error("Mensagem de erro:", error.message);
+      console.error("Stack trace:", error.stack);
+      setError('Não foi possível enviar sua avaliação. Por favor, tente novamente mais tarde.');
     } finally {
       setSubmitting(false);
     }
