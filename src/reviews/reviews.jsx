@@ -65,7 +65,7 @@ const Reviews = () => {
             style={{ cursor: 'pointer' }}
           >
             <div className="review-header">
-              <h3>{review.user}</h3>
+              <h3>{review.cep}</h3>
               <div className="review-rating">
                 {renderStars(review.rating)}
                 <span className="rating-number">({review.rating})</span>
