@@ -5,6 +5,7 @@ import './reviews.css';
 
 const Reviews = () => {
   const [reviews, setReviews] = useState([]);
+  const [shoppingNames, setShoppingNames] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -16,6 +17,21 @@ const Reviews = () => {
         setLoading(true);
         const data = await api.getAllReviews();
         setReviews(data);
+
+        // Fetch shopping names for each review
+        const names = {};
+        for (const review of data) {
+          try {
+            const response = await fetch(`https://incluapi.vercel.app/api/shopping/info/${review.shopping}`);
+            const shoppingData = await response.json();
+            if (response.ok) {
+              names[review.shopping] = shoppingData.name;
+            }
+          } catch (error) {
+            console.error(`Erro ao buscar nome do shopping ${review.shopping}:`, error);
+          }
+        }
+        setShoppingNames(names);
       } catch (error) {
         console.error("Erro ao carregar avaliações:", error);
         setError('Não foi possível carregar as avaliações. Tente novamente mais tarde.');
@@ -65,7 +81,7 @@ const Reviews = () => {
             style={{ cursor: 'pointer' }}
           >
             <div className="review-header">
-              <h3>{review.cep}</h3>
+              <h3>{shoppingNames[review.shopping] || 'Carregando nome do shopping...'}</h3>
               <div className="review-rating">
                 {renderStars(review.rating)}
                 <span className="rating-number">({review.rating})</span>
