@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import "./signin.css"
 
 function SignIn(){
+    const { isLogin, toggleAuthMode } = useAuth();
+    
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -26,28 +29,44 @@ function SignIn(){
     return(
         <div className='login'>
             <div className='login-form'>
-                <h2>Cadastro</h2>
+                <h2>{isLogin ? 'Login' : 'Cadastro'}</h2>
                 <form onSubmit={handleSubmit}>
+                    {!isLogin && (
+                        <>
+                            <div className="form-group">
+                                <label htmlFor="name">Nome</label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="email">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                        </>
+                    )}
                     <div className="form-group">
-                        <label htmlFor="name">Nome</label>
+                        <label htmlFor="cpf">CPF</label>
                         <input
                             type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
+                            id="cpf"
+                            name="cpf"
+                            value={formData.cpf}
                             onChange={handleChange}
                             required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
+                            placeholder="000.000.000-00"
                         />
                     </div>
                     <div className="form-group">
@@ -61,19 +80,13 @@ function SignIn(){
                             required
                         />
                     </div>
-                    <div className="form-group">
-                        <label htmlFor="cpf">CPF</label>
-                        <input
-                            type="text"
-                            id="cpf"
-                            name="cpf"
-                            value={formData.cpf}
-                            onChange={handleChange}
-                            required
-                            placeholder="000.000.000-00"
-                        />
-                    </div>
-                    <button type="submit">Entrar</button>
+                    <button type="submit">{isLogin ? 'Entrar' : 'Cadastrar'}</button>
+                    <p className="toggle-auth">
+                        {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+                        <button type="button" onClick={toggleAuthMode} className="link-button">
+                            {isLogin ? 'Cadastre-se' : 'Faça login'}
+                        </button>
+                    </p>
                 </form>
             </div>
         </div>
